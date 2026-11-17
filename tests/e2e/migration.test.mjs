@@ -22,6 +22,13 @@ test('seed: every environment has the migrator active and a different shape', ()
 });
 
 test('LIVE -> DEMO: different host, port, 8 MB upload limit (chunked)', async () => {
+  const login = await fetch(`${demo.url}/wp-login.php`, {
+    method: 'POST', redirect: 'manual',
+    body: new URLSearchParams({ log: 'admin', pwd: 'admin-pw-demo', redirect_to: `${demo.url}/wp-admin/` }),
+  });
+  const cookie = login.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
+  assert.match(cookie, /wordpress_logged_in/, 'destination login must initially be valid');
+  const key = demo.key;
   const { im } = await migrate(live, demo);
   assert.ok(im.chunks >= 5, `archive must have been sent in several chunks, got ${im.chunks}`);
   const info = demo.info();
@@ -29,6 +36,11 @@ test('LIVE -> DEMO: different host, port, 8 MB upload limit (chunked)', async ()
   // the plugin that was active on live is active on demo; the mu-plugin travelled
   assert.ok(fs.existsSync(path.join(demo.root, 'wp-content/mu-plugins/shm-fixture-mu.php')));
   assert.ok(JSON.stringify(wpctl(demo.root, 'leftovers', 'shm-fixture')).length >= 0);
+  const admin = await fetch(`${demo.url}/wp-admin/`, { headers: { Cookie: cookie }, redirect: 'manual' });
+  assert.match(admin.headers.get('location') || '', /wp-login\.php/, 'the old login must really have been invalidated');
+  const status = await fetch(demo.ajax('shm_status') + '&' + new URLSearchParams({ secret_key: key }), { headers: { Cookie: cookie } });
+  assert.equal(status.status, 200);
+  assert.equal((await status.json()).type, 'done', 'completion must be readable using the original secret and expired login');
 });
 
 test('DEMO -> LIVE: the reverse direction, after editing demo', async () => {

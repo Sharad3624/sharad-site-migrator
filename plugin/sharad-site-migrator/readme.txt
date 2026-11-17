@@ -4,7 +4,7 @@ Tags: migrate, backup, restore, clone, move site
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv3 or later
 
 Export, import, back up and restore a WordPress site between live, demo and local environments, with no upload-size limit.
@@ -17,6 +17,7 @@ Sharad Site Migrator is a GPL fork of All-in-One WP Migration 7.5 (ServMask Inc.
 * Rewrites URLs, serialized data and absolute paths when the address changes (live, demo, local, http/https, sub-folder).
 * Uses the same .wpress archive format as All-in-One WP Migration (importing archives made by the original plugin has not been tested yet).
 * No paid extensions, no update checks, no telemetry.
+* Import requires matching PHP major/minor versions (for example, both sites on 8.2); patch versions may differ. Unknown PHP metadata is rejected before overwriting the destination.
 
 Not included: cloud-storage providers, multisite, WP-CLI, scheduled backups, import from URL/FTP.
 
@@ -24,6 +25,9 @@ Not included: cloud-storage providers, multisite, WP-CLI, scheduled backups, imp
 Upload the folder to wp-content/plugins and activate. Tools appear under "Sharad Migrator" in the admin menu.
 
 == Changelog ==
+= 1.0.6 =
+Stop imports across different PHP major/minor versions before overwriting the destination. Keep secret-authenticated completion polling working when restoring the database invalidates the browser login.
+
 = 1.0.5 =
 Align heading, backup action and Create Backup icons.
 

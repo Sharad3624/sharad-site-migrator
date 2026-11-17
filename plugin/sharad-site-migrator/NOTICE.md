@@ -16,6 +16,8 @@ This is an independent project; it is not affiliated with or endorsed by ServMas
 | Archive extraction | Does not reject `..` in entry paths | Refuses path-traversal entries |
 | Search/replace of serialized data | `unserialize()` on DB content; skipped private/protected props and classes not loaded on the target | Length-aware tokenizer, no `unserialize()` |
 | `shm_parse_size()` / `parse_url()` | PHP 8 warnings; decimal units | ini-style units; null-safe |
+| PHP compatibility | Warning only for PHP 5 to 7 | Reject different PHP major/minor versions and unknown version metadata before overwriting the destination; patch versions may differ |
+| Completion polling | Login can expire when the database is restored | Status remains accessible with the migration secret after database restoration invalidates login cookies |
 
 Backups are stored in `wp-content/shm-backups/` (the site's own storage). Cloud-storage providers,
 multisite and WP-CLI are intentionally not part of this fork.

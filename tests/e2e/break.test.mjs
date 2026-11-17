@@ -33,10 +33,21 @@ test('wrong, empty, missing or malformed secret keys do nothing at all', async (
   assert.deepEqual(demo.fingerprint().tables, before.fp.tables, 'database untouched');
 });
 
-test('status / backup list / delete / label are not reachable without a login, even with the right key', async () => {
+test('status remains available without a login only with the right secret key', async () => {
+  const key = demo.key;
+  const r = await fetch(demo.ajax('shm_status') + '&' + new URLSearchParams({ secret_key: key }));
+  assert.equal(r.status, 200);
+  assert.equal((await r.json()).type, 'done');
+  for (const params of [{}, { secret_key: '' }, { secret_key: 'wrong' }, { 'secret_key[]': key }]) {
+    const denied = await fetch(demo.ajax('shm_status') + '&' + new URLSearchParams(params));
+    assert.equal((await denied.text()).trim(), '', 'invalid credentials must not expose status');
+  }
+});
+
+test('backup list / delete / label are not reachable without a login, even with the right key', async () => {
   const bk = backupsOf(live);
   assert.ok(bk.length > 0);
-  for (const action of ['shm_status', 'shm_backups', 'shm_backup_list', 'shm_add_backup_label']) {
+  for (const action of ['shm_backups', 'shm_backup_list', 'shm_add_backup_label']) {
     const r = await raw(live.ajax(action), { secret_key: live.key, archive: bk[0], label: 'x' });
     assert.ok(r.text === '0' || r.text === '', `${action} answered: ${r.text.slice(0, 80)}`);
   }
@@ -85,6 +96,21 @@ async function mustReject(name, archiveBytes, why) {
   assert.deepEqual(diffFingerprints(before, demo.fingerprint()), [], `${name}: the target site must be untouched by a rejected archive`);
   assert.deepEqual(pluginIssuesSince(demo, mark), [], `${name}: no PHP warnings`);
 }
+
+test('different PHP versions and missing metadata stop before overwriting the destination', async () => {
+  const original = JSON.parse(goodEntries().find((e) => e.path === 'package.json').data);
+  const major = Number(original.PHP.Version.split('.')[0]);
+  for (const version of [`${major - 1}.4.33`, `${major + 1}.0.0`, null, ['8.2'], 'invalid']) {
+    const entries = goodEntries().map((e) => {
+      if (e.path !== 'package.json') return e;
+      const pkg = { ...original, PHP: { Version: version } };
+      if (version === null) delete pkg.PHP;
+      return { ...e, data: Buffer.from(JSON.stringify(pkg)) };
+    });
+    await mustReject(`php-${String(version)}`, wpress(entries), 'PHP compatibility');
+    assert.match(demo.status().message, /PHP/);
+  }
+});
 
 test('archive with a path-traversal entry is rejected before anything is written', async () => {
   const entries = goodEntries();

@@ -35,7 +35,7 @@ define( 'SHM_DEBUG', false );
 // ==================
 // = Plugin Version =
 // ==================
-define( 'SHM_VERSION', '1.0.5' );
+define( 'SHM_VERSION', '1.0.6' );
 
 // ==============================
 // = Archive (.wpress) Format   =

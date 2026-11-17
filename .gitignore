@@ -9,5 +9,6 @@ node_modules/
 *.sql
 /dist/*
 !/dist/sharad-site-migrator-1.0.5.zip
+!/dist/sharad-site-migrator-1.0.6.zip
 /IMPORT-FIX.md
 /DESIGN-FIX.md

@@ -207,6 +207,9 @@ switch ( $cmd ) {
 		$deep = $up['basedir'] . '/' . implode( '/', array_fill( 0, 30, 'd23456789' ) );
 		wp_mkdir_p( $deep );
 		file_put_contents( $deep . '/deep.txt', 'deep' );
+		if ( is_file( $up['path'] . '/readonly.txt' ) ) {
+			chmod( $up['path'] . '/readonly.txt', 0644 );
+		}
 		file_put_contents( $up['path'] . '/readonly.txt', 'ro' );
 		chmod( $up['path'] . '/readonly.txt', 0444 );
 		// a real plugin + mu-plugin that must stay active/present after a migration

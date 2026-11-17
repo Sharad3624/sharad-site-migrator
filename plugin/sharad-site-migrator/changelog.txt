@@ -1,3 +1,8 @@
+= 1.0.6 =
+* Import: replace the PHP 5-to-7 warning with a blocking major/minor version check in both directions, before confirmation and destination changes. Reject missing or malformed PHP version metadata; allow patch-version differences.
+* Completion: register the logged-out status route so the original import tab can show success after restored users invalidate its login. The existing secret-key authentication remains required.
+* Tests: cover PHP 8.2-to-8.0 rejection, unchanged destination data on rejection, expired-login completion, and status access with invalid keys. Migration tests now poll over HTTP with the original secret instead of reading status through PHP CLI.
+
 = 1.0.5 =
 * Design: center backup action icons in consistent circular controls, align heading and Create Backup icons, and show a visible keyboard-focus outline.
 

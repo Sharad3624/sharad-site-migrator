@@ -50,24 +50,7 @@ class Shm_Import_Confirm {
 			SHM_PLUGIN_NAME
 		);
 
-		// Check compatibility of PHP versions
-		if ( isset( $package['PHP']['Version'] ) ) {
-			if ( version_compare( $package['PHP']['Version'], '7.0.0', '<' ) && version_compare( PHP_VERSION, '7.0.0', '>=' ) ) {
-
-				if ( defined( 'WP_CLI' ) ) {
-					WP_CLI::log(
-						__( 'Your backup is from a PHP 5 but the site that you are importing to is PHP 7.', SHM_PLUGIN_NAME ) .
-						__( 'This could cause the import to fail.', SHM_PLUGIN_NAME )
-					);
-				} else {
-					$messages[] = __(
-						'<i class="shm-import-info">Your backup is from a PHP 5 but the site that you are importing to is PHP 7. ' .
-						'This could cause the import to fail.</i>',
-						SHM_PLUGIN_NAME
-					);
-				}
-			}
-		}
+		Shm_Compatibility::check_php_version( $package['PHP']['Version'] ?? null, PHP_VERSION );
 
 		if ( defined( 'WP_CLI' ) ) {
 			$message = __(

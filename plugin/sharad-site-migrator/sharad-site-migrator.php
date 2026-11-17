@@ -3,7 +3,7 @@
  * Plugin Name: Sharad Site Migrator
  * Description: Export, import, back up and restore a WordPress site between live, demo and local environments with no upload-size limit. Backups are kept in the site's own storage. A GPL fork of All-in-One WP Migration 7.5.
  * Author: Sharad
- * Version: 1.0.5
+ * Version: 1.0.6
  * Requires PHP: 7.4
  * Text Domain: sharad-site-migrator
  * Domain Path: /languages

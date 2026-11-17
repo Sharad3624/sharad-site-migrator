@@ -837,6 +837,8 @@ class Shm_Main_Controller {
 		// Public actions: the export/import steps call themselves over HTTP without a login cookie
 		add_action( 'wp_ajax_nopriv_shm_export', 'Shm_Export_Controller::export' );
 		add_action( 'wp_ajax_nopriv_shm_import', 'Shm_Import_Controller::import' );
+		// Restoring users invalidates login cookies; status still verifies the migration secret.
+		add_action( 'wp_ajax_nopriv_shm_status', 'Shm_Status_Controller::status' );
 
 		// Private actions
 		add_action( 'wp_ajax_shm_export', 'Shm_Export_Controller::export' );

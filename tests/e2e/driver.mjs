@@ -75,10 +75,12 @@ async function runSteps(site, action, params, log, stopAfter = Infinity) {
   throw new Error(`${action}: more than 20000 steps`);
 }
 
-async function waitStatus(site, wanted, timeoutMs = 120000) {
+async function waitStatus(site, wanted, key, timeoutMs = 120000) {
   const t0 = Date.now();
   for (;;) {
-    const s = site.status();
+    const response = await fetch(site.ajax('shm_status') + '&' + new URLSearchParams({ secret_key: key }));
+    if (!response.ok) throw new Error(`status polling failed: HTTP ${response.status}`);
+    const s = await response.json();
     if (s && wanted.includes(s.type)) return s;
     if (Date.now() - t0 > timeoutMs) throw new Error(`status never reached ${wanted}: ${JSON.stringify(s)}`);
     await sleep(300);
@@ -90,7 +92,7 @@ export async function exportSite(site, outFile, extra = {}) {
   const log = { steps: 0, noise: [] };
   const key = site.key;
   await runSteps(site, 'shm_export', { secret_key: key, shm_manual_export: 1, ...extra }, log);
-  const st = await waitStatus(site, ['download', 'error']);
+  const st = await waitStatus(site, ['download', 'error'], key);
   if (st.type === 'error') throw new Error(`export failed: ${st.title}: ${st.message}`);
   const href = st.message.match(/href="([^"]+)"/)[1];
   const res = await fetch(href);
@@ -106,8 +108,9 @@ export async function exportSite(site, outFile, extra = {}) {
 export async function importArchive(site, file, opts = {}) {
   const log = { steps: 0, noise: [], chunks: 0, partial: null };
   if (opts.resume) {                       // continue an interrupted import from the params the server last returned
-    await runSteps(site, 'shm_import', { ...opts.resume, secret_key: site.key }, log);
-    const done = await waitStatus(site, ['done', 'error'], 600000);
+    const key = site.key;
+    await runSteps(site, 'shm_import', { ...opts.resume, secret_key: key }, log);
+    const done = await waitStatus(site, ['done', 'error'], key, 600000);
     if (done.type === 'error') throw new Error(`import failed: ${done.title}: ${done.message}`);
     return { ...log, status: done };
   }
@@ -154,13 +157,12 @@ export async function importArchive(site, file, opts = {}) {
     : { secret_key: key, storage, archive, shm_manual_import: 1, ...opts.uploaded };
   const last = await runSteps(site, 'shm_import', base, log);
 
-  let st = await waitStatus(site, ['confirm', 'done', 'error']);
+  let st = await waitStatus(site, ['confirm', 'done', 'error'], key);
   if (st.type === 'confirm') {
-    // the user pressed "Proceed": same params at priority 150. The imported DB may carry a different key.
-    const key2 = site.key;
-    await runSteps(site, 'shm_import', { ...last, secret_key: key2, priority: 150 }, log, opts.interruptAfterConfirm ?? Infinity);
+    // The browser keeps the original secret across database replacement and lost login cookies.
+    await runSteps(site, 'shm_import', { ...last, secret_key: key, priority: 150 }, log, opts.interruptAfterConfirm ?? Infinity);
     if (log.partial) return { ...log, status: { type: 'interrupted' } };
-    st = await waitStatus(site, ['done', 'error'], 600000);
+    st = await waitStatus(site, ['done', 'error'], key, 600000);
   }
   if (st.type === 'error') throw new Error(`import failed: ${st.title}: ${st.message}`);
   return { ...log, status: st };
