@@ -1,0 +1,13 @@
+/vendor/
+node_modules/
+.DS_Store
+.phpunit.result.cache
+.env
+.env.*
+*.log
+*.wpress
+*.sql
+/dist/*
+!/dist/sharad-site-migrator-1.0.5.zip
+/IMPORT-FIX.md
+/DESIGN-FIX.md

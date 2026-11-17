@@ -1,0 +1,29 @@
+= 1.0.5 =
+* Design: center backup action icons in consistent circular controls, align heading and Create Backup icons, and show a visible keyboard-focus outline.
+
+= 1.0.4 =
+* Design: size Import and Export dropdowns to their available providers, removing the oversized empty panel in both left-to-right and right-to-left layouts. The import drop area grows with wrapped text and the open menu on mobile.
+
+= 1.0.3 =
+* Fix the actual large-upload failure: convert the wp_localize_script string chunk_size to a number before adding the offset. Previously the second request contained the entire remaining archive and exceeded post_max_size.
+* Regression coverage uses WordPress-style string configuration in both JS and real-HTTP browser-bundle tests.
+
+= 1.0.2 =
+* Import: verify received chunk lengths before writing and retry incomplete chunks at a smaller size.
+* Import: require JSON acknowledgements with the expected stored byte count; never start extraction after a missing or invalid acknowledgement.
+* Import: carry the browser file size into validation and reject incomplete uploads before extraction.
+* Tests: shipped browser uploader over real HTTP, cross-host migrations with 8 MB request limits, and byte-size/SHA-256/EOF comparisons at export, download and upload.
+
+= 1.0.1 =
+* Import: the pre-flight database check is now advisory. It still runs and logs any problem, but a probe failure
+  (strict max_allowed_packet, an engine/row-format the probe mis-detects, or a DB user without CREATE/DROP rights on the
+  throw-away probe table) no longer aborts a restore that would otherwise succeed - matching upstream behaviour. Any
+  warning is written to the import error log instead.
+
+= 1.0.0 =
+* Fork of All-in-One WP Migration 7.5 (GPL). See NOTICE.md.
+* Chunked, resumable, unlimited-size import; Restore from stored backups; paid-extension scaffolding, updater and telemetry removed.
+* Fixes: backups with unguessable names; constant-time secret-key check; path-traversal refusal; no unserialize() on database content;
+  rows ending in a backslash no longer lost; MySQL 8 / MariaDB collations converted; pre-flight check before any table is touched;
+  plugin state restored after a failed import; empty archives never offered for download; parallel exports no longer share a working folder;
+  read-only target files replaced; PHP 8.1/8.2 deprecations fixed; PHP errors that are handled with @ are no longer logged.
